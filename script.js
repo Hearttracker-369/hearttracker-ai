@@ -1,31 +1,41 @@
-const startBtn = document.getElementById('startBtn');
-const statusText = document.getElementById('status');
+let audioContext;
+let analyser;
+let dataArray;
 
-startBtn.addEventListener('click', async () => {
-    try {
-        // Request microphone access
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        statusText.textContent = 'Microphone access granted! Listening...';
+function startMic() {
+  document.getElementById("status").innerText = "Mic starting...";
 
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const source = audioContext.createMediaStreamSource(stream);
-        const analyser = audioContext.createAnalyser();
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
 
-        source.connect(analyser);
-        analyser.fftSize = 256;
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
 
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
 
-        function detectSound() {
-            analyser.getByteFrequencyData(dataArray);
-            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-            statusText.textContent = `Current volume: ${Math.round(average)}`;
-            requestAnimationFrame(detectSound);
-        }
+      source.connect(analyser);
 
-        detectSound();
-    } catch (err) {
-        console.error(err);
-        statusText.textContent = 'Microphone access denied or error occurred.';
-    }
-});
+      document.getElementById("status").innerText = "Mic running";
+      readMic();
+    })
+    .catch(err => {
+      alert("Mic permission denied");
+    });
+}
+
+function readMic() {
+  analyser.getByteFrequencyData(dataArray);
+
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += dataArray[i];
+  }
+
+  let average = Math.round(sum / dataArray.length);
+  document.getElementById("value").innerText = average;
+
+  requestAnimationFrame(readMic);
+}
