@@ -1,41 +1,18 @@
-let audioContext;
-let analyser;
-let dataArray;
+window.addEventListener("devicemotion", (event) => {
+  const acc = event.accelerationIncludingGravity;
 
-function startMic() {
-  document.getElementById("status").innerText = "Mic starting...";
-
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(stream => {
-      audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(stream);
-
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 256;
-
-      const bufferLength = analyser.frequencyBinCount;
-      dataArray = new Uint8Array(bufferLength);
-
-      source.connect(analyser);
-
-      document.getElementById("status").innerText = "Mic running";
-      readMic();
-    })
-    .catch(err => {
-      alert("Mic permission denied");
-    });
-}
-
-function readMic() {
-  analyser.getByteFrequencyData(dataArray);
-
-  let sum = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    sum += dataArray[i];
+  if (!acc) {
+    document.getElementById("status").innerText =
+      "Accelerometer not supported";
+    return;
   }
 
-  let average = Math.round(sum / dataArray.length);
-  document.getElementById("value").innerText = average;
+  const x = acc.x || 0;
+  const y = acc.y || 0;
+  const z = acc.z || 0;
 
-  requestAnimationFrame(readMic);
-}
+  const vibration = Math.sqrt(x*x + y*y + z*z);
+
+  document.getElementById("output").innerText =
+    "Vibration Energy: " + vibration.toFixed(2);
+});
