@@ -1,18 +1,18 @@
+let buffer = [];
+
 window.addEventListener("devicemotion", (event) => {
-  const acc = event.accelerationIncludingGravity;
+  let x = event.acceleration?.x || 0;
+  let y = event.acceleration?.y || 0;
+  let z = event.acceleration?.z || 0;
 
-  if (!acc) {
-    document.getElementById("status").innerText =
-      "Accelerometer not supported";
-    return;
-  }
+  let vibration = Math.sqrt(x*x + y*y + z*z);
 
-  const x = acc.x || 0;
-  const y = acc.y || 0;
-  const z = acc.z || 0;
+  buffer.push(vibration);
+  if (buffer.length > 20) buffer.shift();
 
-  const vibration = Math.sqrt(x*x + y*y + z*z);
+  let smooth =
+    buffer.reduce((a,b)=>a+b,0) / buffer.length;
 
-  document.getElementById("output").innerText =
-    "Vibration Energy: " + vibration.toFixed(2);
+  console.log("Vibration:", vibration.toFixed(4),
+              "Smooth:", smooth.toFixed(4));
 });
