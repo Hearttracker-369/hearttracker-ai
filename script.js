@@ -1,18 +1,25 @@
-let buffer = [];
+console.log("JS Loaded");
+
+const statusText = document.getElementById("status");
 
 window.addEventListener("devicemotion", (event) => {
-  let x = event.acceleration?.x || 0;
-  let y = event.acceleration?.y || 0;
-  let z = event.acceleration?.z || 0;
+  // PURE acceleration (gravity removed by system)
+  const acc = event.acceleration;
 
-  let vibration = Math.sqrt(x*x + y*y + z*z);
+  if (!acc) {
+    statusText.innerText = "Acceleration not supported";
+    return;
+  }
 
-  buffer.push(vibration);
-  if (buffer.length > 20) buffer.shift();
+  let x = acc.x ?? 0;
+  let y = acc.y ?? 0;
+  let z = acc.z ?? 0;
 
-  let smooth =
-    buffer.reduce((a,b)=>a+b,0) / buffer.length;
+  let magnitude = Math.sqrt(x*x + y*y + z*z);
 
-  console.log("Vibration:", vibration.toFixed(4),
-              "Smooth:", smooth.toFixed(4));
+  statusText.innerText =
+    `x: ${x.toFixed(3)} | y: ${y.toFixed(3)} | z: ${z.toFixed(3)}\n` +
+    `Vibration: ${magnitude.toFixed(3)}`;
+
+  console.log("Vibration:", magnitude);
 });
