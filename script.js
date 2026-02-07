@@ -55,4 +55,3 @@ function stopScan() {
   statusEl.innerText = status;
   confidenceEl.innerText = confidence + "%";
 }
-
